@@ -1,0 +1,9 @@
+# Source CV, used only to extract information for the site.
+# Contains personal contact details. Never published, never committed.
+cv/
+
+# Scratch screenshots and editor leftovers.
+Screenshot*.png
+*~
+*.swp
+.DS_Store

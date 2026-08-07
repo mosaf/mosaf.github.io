@@ -38,8 +38,10 @@ LINK_FIELDS = ["code", "abstract", "pdf", "slides", "video", "data"]
 # the BibTeX with syntax highlighting and a copy button. Set to None to disable.
 REPO_BLOB_BASE = "https://github.com/mosaf/mosaf.github.io/blob/main/bib"
 
-MARKER_BEGIN = "<!-- generated from bib/{slug} by build.py - do not edit by hand -->"
-MARKER_END = "<!-- end generated -->"
+# Generated regions are identified by the data-generated attribute on the <ul>,
+# NOT by HTML comments. Comments cannot nest, so a comment marker written inside
+# an already-commented-out section terminates it early and leaks markup onto the
+# page. The attribute has no such failure mode and is inert in CSS.
 
 
 # --------------------------------------------------------------------------
@@ -211,12 +213,18 @@ def primary_url(e):
 
 
 def sort_key(e):
+    """Newest year first; within a year, HIGHER order first.
+
+    Adding a paper to the top of its year means giving it a number above the
+    current top - see `top order` in this script's output. A missing order
+    counts as 0, so the entry falls to the bottom of its year.
+    """
     year = re.sub(r"[^0-9]", "", e.get("year", "")) or "0"
     try:
         order = int(re.sub(r"[^0-9-]", "", e.get("order", "0")) or 0)
     except ValueError:
         order = 0
-    return (-int(year), order, e["_key"])
+    return (-int(year), -order, e["_key"])
 
 
 def render_entry(e):
@@ -294,22 +302,37 @@ def load_section(slug):
 def build_html(slug):
     entries = load_section(slug)
     body = "\n\n".join(render_entry(e) for e in entries)
-    begin = MARKER_BEGIN.format(slug=slug)
-    return (
-        f"\n            {begin}\n\n{body}\n\n            {MARKER_END}\n          "
-    ), len(entries)
+    return f"\n{body}\n          ", entries
 
 
 def splice(doc, heading, slug):
-    """Replace the body of the pub-list that follows `heading`."""
+    """Replace the contents of <ul class="pub-list" data-generated="slug">."""
     pattern = re.compile(
-        r"(" + re.escape(heading) + r".*?<ul class=\"pub-list\">)(.*?)(</ul>)", re.S
+        r"(<ul class=\"pub-list\" data-generated=\"" + re.escape(slug) + r"\">)"
+        r"(.*?)(</ul>)",
+        re.S,
     )
     m = pattern.search(doc)
     if not m:
-        sys.exit(f"could not locate section: {heading}")
-    new_body, count = build_html(slug)
-    return doc[: m.start(2)] + new_body + doc[m.end(2):], count
+        sys.exit(
+            f'could not find <ul class="pub-list" data-generated="{slug}"> '
+            "in index.html"
+        )
+    new_body, entries = build_html(slug)
+    return doc[: m.start(2)] + new_body + doc[m.end(2):], entries
+
+
+def top_hint(entries):
+    """'top: order 100 (2026) - use 110 to go above it'"""
+    if not entries:
+        return "empty"
+    top = entries[0]
+    year = re.sub(r"[^0-9]", "", top.get("year", "")) or "?"
+    try:
+        order = int(re.sub(r"[^0-9-]", "", top.get("order", "0")) or 0)
+    except ValueError:
+        order = 0
+    return f"top of {year} is order {order} - use {order + 10} to go above it"
 
 
 def main():
@@ -324,9 +347,9 @@ def main():
     doc = original
     total = 0
     for heading, slug in SECTIONS:
-        doc, count = splice(doc, heading, slug)
-        print(f"{slug:12s} {count:3d} entries")
-        total += count
+        doc, entries = splice(doc, heading, slug)
+        print(f"{slug:12s} {len(entries):3d} entries   {top_hint(entries)}")
+        total += len(entries)
 
     if args.check:
         if doc != original:

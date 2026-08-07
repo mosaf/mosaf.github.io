@@ -1,8 +1,8 @@
 # Publications
 
-Every publication on the site comes from a `.bib` file in this folder. The HTML in
-`index.html` between the `<!-- generated ... -->` markers is produced by `build.py`
-and **should not be edited by hand** — the next build overwrites it.
+Every publication on the site comes from a `.bib` file in this folder. The contents
+of each `<ul class="pub-list" data-generated="...">` in `index.html` are produced by
+`build.py` and **should not be edited by hand** — the next build overwrites them.
 
 ## Adding a paper
 
@@ -42,7 +42,7 @@ These are extra — publishers never include them, so add them yourself:
 | `award` | Award text shown above the note | no |
 | `code` | URL for a `code` link | no |
 | `abstract` | URL for an `abstract` link | no |
-| `order` | Position within its year, lower first. Omit for new papers and they sort to the top of their year. | no |
+| `order` | Position within its year, **higher first**. See below. | recommended |
 
 `pdf`, `slides`, `video`, and `data` also render as links if present.
 
@@ -67,7 +67,32 @@ Notes on formatting:
 - Wrap acronyms in braces — `{CT}`, `{MRI}` — so other BibTeX tools don't lowercase
   them. `build.py` strips the braces when rendering.
 - LaTeX escapes (`\&`, `\%`, `{\"o}`) are converted for you.
-- Entries sort by year descending, then by `order`, then by citation key.
+- Entries sort by year descending, then by `order` descending, then by citation key.
+
+## Ordering
+
+Newest year always comes first. Within a year, **higher `order` wins**.
+
+Existing entries are numbered in steps of 10 (`100, 90, 80, …`) so there is always
+room between any two neighbours — you never have to renumber.
+
+`build.py` prints the number to beat every time it runs:
+
+```
+journal       20 entries   top of 2026 is order 100 - use 110 to go above it
+```
+
+So to put a new paper at the very top, give it `order = {110}`.
+
+| You want | You write |
+|---|---|
+| Top of its year | the number `build.py` tells you |
+| Between 80 and 90 | `order = {85}` |
+| Bottom of its year | omit `order`, or `order = {0}` |
+
+A missing `order` counts as 0, so it sinks to the bottom of its year. Two entries
+with the same `order` fall back to alphabetical citation key — which is arbitrary,
+so give each paper its own number if you care where it sits.
 
 ## The `bib` link
 

@@ -69,6 +69,20 @@ Notes on formatting:
 - LaTeX escapes (`\&`, `\%`, `{\"o}`) are converted for you.
 - Entries sort by year descending, then by `order`, then by citation key.
 
+## The `bib` link
+
+Every entry automatically gets a `bib` link next to `doi`. It points at this file on
+GitHub, which renders the BibTeX with syntax highlighting and a copy button, and opens
+in a new tab. You don't add anything — `build.py` derives the URL from the file's
+location.
+
+One consequence: the link targets the `main` branch on github.com, so a brand-new
+paper's `bib` link 404s until you `git push`. Build and push in the same session and
+you'll never notice.
+
+To change the target or turn the links off, edit `REPO_BLOB_BASE` near the top of
+`build.py` (set it to `None` to disable).
+
 ## Checking without writing
 
 ```bash

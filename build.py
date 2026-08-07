@@ -34,6 +34,10 @@ SECTIONS = [
 # Which link fields to render, and in what order.
 LINK_FIELDS = ["code", "abstract", "pdf", "slides", "video", "data"]
 
+# Every entry also gets a "bib" link to its source file on GitHub, which renders
+# the BibTeX with syntax highlighting and a copy button. Set to None to disable.
+REPO_BLOB_BASE = "https://github.com/mosaf/mosaf.github.io/blob/main/bib"
+
 MARKER_BEGIN = "<!-- generated from bib/{slug} by build.py - do not edit by hand -->"
 MARKER_END = "<!-- end generated -->"
 
@@ -188,13 +192,15 @@ def format_authors(raw):
 
 
 def entry_links(e):
-    """[(label, url)] in a stable order, doi first."""
+    """[(label, url)] in a stable order: doi, extras, then bib."""
     links = []
     if e.get("doi"):
         links.append(("doi", "https://doi.org/" + e["doi"].strip()))
     for field in LINK_FIELDS:
         if e.get(field):
             links.append((field, e[field].strip()))
+    if REPO_BLOB_BASE and e.get("_file"):
+        links.append(("bib", f"{REPO_BLOB_BASE}/{e['_file'].replace(os.sep, '/')}"))
     return links
 
 

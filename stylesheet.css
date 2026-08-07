@@ -138,6 +138,21 @@ li {
   line-height: 1.6;
 }
 
+/* Body prose is justified so both edges line up. This deliberately targets only
+   unclassed <p> and the misc-body cells: publication metadata, the name,
+   tagline and contact chips keep their own alignment.
+
+   hyphens: auto stops justification from opening large word gaps in the narrow
+   bio column beside the photo. It relies on <html lang="en">, which is set.
+   Bullet lines inside misc-body end with <br>, and CSS never stretches a line
+   that ends in a forced break, so they stay unaffected. */
+p:not([class]),
+.misc-body {
+  text-align: justify;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
 strong {
   font-family: var(--font);
   font-weight: 700;

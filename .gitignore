@@ -2,6 +2,9 @@
 # Contains personal contact details. Never published, never committed.
 cv/
 
+# Personal how-to notes. Local reference only, never published.
+HOWTO-*.txt
+
 # Scratch screenshots and editor leftovers.
 Screenshot*.png
 *~

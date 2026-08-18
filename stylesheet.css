@@ -219,7 +219,10 @@ span.highlight {
 /* ---- Header ------------------------------------------------------------ */
 
 .header-bio {
-  padding: 2.5%;
+  /* Left padding is 16px, not 2.5%, so the bio's left edge lines up exactly
+     with the section headings and their body text below (.section-head uses
+     26px 16px 10px). A percentage here drifted ~11px to the right. */
+  padding: 2.5% 2.5% 2.5% 16px;
   width: 63%;
   vertical-align: middle;
 }
